@@ -100,8 +100,12 @@ class Common
     else
       pid = spawn(*cmd)
       Process.wait pid
-      if !$?.success?
-        exit $?.exitstatus
+      if $?.exited?
+        if !$?.success?
+          exit $?.exitstatus
+        end
+      else
+        error "Command exited abnormally."
       end
     end
   end
