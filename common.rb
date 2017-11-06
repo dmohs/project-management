@@ -85,7 +85,7 @@ class Common
   end
 
   def capture_stdout(cmd)
-    output, _ = Open3.capture2(*cmd)
+    output, _ = Open3.capture2(*cmd, :err=>"/dev/null")
     output
   end
 
