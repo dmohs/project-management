@@ -12,6 +12,10 @@ class Common
     @@commands.push(command)
   end
 
+  def Common.unregister_upgrade_self_command()
+    @@commands.reject! { |x| x[:upgrade_self_command] }
+  end
+
   def Common.commands()
     @@commands
   end
@@ -22,17 +26,6 @@ class Common
   def initialize()
     @docker = DockerHelper.new(self)
     @sf = SyncFiles.new(self)
-  end
-
-  def prefer_version(version)
-    Dir.chdir(File.dirname(__FILE__)) do
-      current_version, _ = Open3.capture2(*%W{git rev-parse --short HEAD})
-      current_version.chomp!
-      if version != current_version
-        run_inline %W{git pull origin master}
-        run_inline %W{git checkout #{version}}
-      end
-    end
   end
 
   def print_usage()
@@ -123,6 +116,13 @@ class Common
     end
   end
 
+  def run_inline_swallowing_interrupt(cmd)
+    begin
+      run_inline cmd
+    rescue Interrupt
+    end
+  end
+
   def run_or_fail(cmd)
     put_command(cmd)
     Open3.popen3(*cmd) do |i, o, e, t|
@@ -165,5 +165,6 @@ end
 Common.register_command({
   :invocation => "upgrade-self",
   :description => "Upgrades this project tool to the latest version.",
-  :fn => Proc.new { |*args| upgrade_self(*args) }
+  :fn => Proc.new { |*args| upgrade_self(*args) },
+  :upgrade_self_command => true,
 })
