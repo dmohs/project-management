@@ -33,7 +33,7 @@ class Common
     STDERR.puts "COMMANDS\n\n"
     @@commands.each do |command|
       STDERR.puts bold_term_text(command[:invocation])
-      STDERR.puts command[:description]
+      STDERR.puts command[:description] || "(no description specified)"
       STDERR.puts
     end
   end
@@ -76,12 +76,17 @@ class Common
     STDERR.puts red_term_text(text)
   end
 
-  def put_command(cmd)
+  def put_command(cmd, redact=nil)
     if cmd.is_a?(String)
-      STDERR.puts "+ #{cmd}"
+      command_string = "+ #{cmd}"
     else
-      STDERR.puts "+ #{cmd.join(" ")}"
+      command_string = "+ #{cmd.join(" ")}"
     end
+    command_to_echo = command_string.clone
+    if redact
+      command_to_echo.sub! redact, "*" * redact.length
+    end
+    STDERR.puts command_to_echo
   end
 
   def capture_stdout(cmd)
@@ -89,8 +94,8 @@ class Common
     output
   end
 
-  def run_inline(cmd)
-    put_command(cmd)
+  def run_inline(cmd, redact=nil)
+    put_command(cmd, redact)
 
     # `system`, by design (?!), hides stderr when the command fails.
     if ENV["PROJECTRB_USE_SYSTEM"] == "true"
@@ -124,8 +129,8 @@ class Common
     end
   end
 
-  def run_or_fail(cmd)
-    put_command(cmd)
+  def run_or_fail(cmd, redact=nil)
+    put_command(cmd, redact)
     Open3.popen3(*cmd) do |i, o, e, t|
       i.close
       if not t.value.success?
@@ -166,6 +171,6 @@ end
 Common.register_command({
   :invocation => "upgrade-self",
   :description => "Upgrades this project tool to the latest version.",
-  :fn => Proc.new { |*args| upgrade_self(*args) },
+  :fn => lambda { |*args| upgrade_self(*args) },
   :upgrade_self_command => true,
 })
