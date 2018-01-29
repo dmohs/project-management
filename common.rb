@@ -111,14 +111,8 @@ class Common
         end
       else
         error "Command exited abnormally."
+        exit 1
       end
-    end
-  end
-
-  def run_inline_swallowing_interrupt(cmd)
-    begin
-      run_inline cmd
-    rescue Interrupt
     end
   end
 
