@@ -9,6 +9,25 @@ class Common
   @@commands = []
 
   def self.register_command(command)
+    invocation = command[:invocation]
+    fn = command[:fn]
+    if fn.nil?
+      error "No :fn key defined for command #{invocation}"
+      exit 1
+    end
+    if fn.is_a?(Symbol)
+      unless Object.private_method_defined?(fn)
+        self.new.error "Function #{fn.to_s} is not defined for #{invocation}."
+        exit 1
+      end
+    else
+      # TODO(dmohs): Deprecation warning.
+      unless fn.is_a?(Proc)
+        self.new.error ":fn key for #{invocation} does not define a Proc or Symbol"
+        exit 1
+      end
+    end
+
     @@commands.push(command)
   end
 
@@ -45,7 +64,6 @@ class Common
     end
 
     command = args.first
-    args = args.drop(1)
     handler = @@commands.select{ |x| x[:invocation] == command }.first
     if handler.nil?
       error "#{command} command not found."
@@ -53,19 +71,10 @@ class Common
     end
 
     fn = handler[:fn]
-    if fn.nil?
-      error "No :fn key for command #{command}"
-      exit 1
-    end
     if fn.is_a?(Symbol)
-      Object.private_instance_methods[fn].send(command, *args)
+      method(fn).call(*args)
     else
-      # TODO(dmohs): Deprecation warning.
-      unless fn.is_a?(Proc)
-        error ":fn key does not define a Proc or Symbol"
-        exit 1
-      end
-      handler[:fn].call(command, *args)
+      handler[:fn].call(*args.drop(1))
     end
   end
 
