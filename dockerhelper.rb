@@ -5,6 +5,10 @@ class DockerHelper
     @c = common
   end
 
+  def in_docker?()
+    File.exist?("/.dockerenv")
+  end
+
   def requires_docker()
     status = c.run %W{which docker}
     unless status.success?

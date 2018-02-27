@@ -8,15 +8,15 @@ require_relative "syncfiles"
 class Common
   @@commands = []
 
-  def Common.register_command(command)
+  def self.register_command(command)
     @@commands.push(command)
   end
 
-  def Common.unregister_upgrade_self_command()
+  def self.unregister_upgrade_self_command()
     @@commands.reject! { |x| x[:upgrade_self_command] }
   end
 
-  def Common.commands()
+  def self.commands()
     @@commands
   end
 
@@ -38,14 +38,35 @@ class Common
     end
   end
 
-  def handle_or_die(command, *args)
+  def handle_or_die(args)
+    if args.length == 0 or args[0] == "--help"
+      print_usage
+      exit 0
+    end
+
+    command = args.first
+    args = args.drop(1)
     handler = @@commands.select{ |x| x[:invocation] == command }.first
     if handler.nil?
       error "#{command} command not found."
       exit 1
     end
 
-    handler[:fn].call(*args)
+    fn = handler[:fn]
+    if fn.nil?
+      error "No :fn key for command #{command}"
+      exit 1
+    end
+    if fn.is_a?(Symbol)
+      Object.private_instance_methods[fn].send(command, *args)
+    else
+      # TODO(dmohs): Deprecation warning.
+      unless fn.is_a?(Proc)
+        error ":fn key does not define a Proc or Symbol"
+        exit 1
+      end
+      handler[:fn].call(command, *args)
+    end
   end
 
   def load_env()
