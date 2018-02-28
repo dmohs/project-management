@@ -63,6 +63,15 @@ class Common
       exit 0
     end
 
+    if args[0] == "--cmplt" # Shell completion argument name inspired by vault
+      # Form of args: --cmplt <index-of-current-argument> ./project.rb arg arg arg
+      index = args[1].to_i
+      word = args[2 + index]
+      puts @@commands.select{ |x| x[:invocation].start_with?(word) }
+          .map{ |x| x[:invocation]}.join("\n")
+      exit 0
+    end
+
     command = args.first
     handler = @@commands.select{ |x| x[:invocation] == command }.first
     if handler.nil?
