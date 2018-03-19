@@ -193,7 +193,7 @@ class Common
   end
 end
 
-def upgrade_self()
+def upgrade_self(_)
   c = Common.new
   Dir.chdir(File.dirname(__FILE__)) do
     c.run_inline %W{git pull}
@@ -204,6 +204,6 @@ end
 Common.register_command({
   :invocation => "upgrade-self",
   :description => "Upgrades this project tool to the latest version.",
-  :fn => lambda { |*args| upgrade_self(*args) },
+  :fn => :upgrade_self,
   :upgrade_self_command => true,
 })
