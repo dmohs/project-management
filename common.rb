@@ -97,8 +97,9 @@ class Common
     STDERR.puts command_to_echo
   end
 
-  def capture_stdout(cmd)
-    output, _ = Open3.capture2(*cmd)
+  # Pass "/dev/null" for err to suppress stderr.
+  def capture_stdout(cmd, err = STDERR)
+    output, _ = Open3.capture2(*cmd, :err => err)
     output
   end
 
