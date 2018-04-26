@@ -103,12 +103,20 @@ class Common
     "\033[0;36m#{text}\033[0m"
   end
 
+  def yellow_term_text(text)
+    "\033[0;33m#{text}\033[0m"
+  end
+
   def bold_term_text(text)
     "\033[1m#{text}\033[0m"
   end
 
   def status(text)
     STDERR.puts blue_term_text(text)
+  end
+
+  def warning(text)
+    STDERR.puts yellow_term_text(text)
   end
 
   def error(text)
@@ -128,8 +136,12 @@ class Common
     STDERR.puts command_to_echo
   end
 
-  def capture_stdout(cmd)
-    output, _ = Open3.capture2(*cmd, :err=>"/dev/null")
+  # Pass err=nil to suppress stderr.
+  def capture_stdout(cmd, err = STDERR)
+    if err.nil?
+      err = "/dev/null"
+    end
+    output, _ = Open3.capture2(*cmd, :err => err)
     output
   end
 
