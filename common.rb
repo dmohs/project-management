@@ -97,8 +97,11 @@ class Common
     STDERR.puts command_to_echo
   end
 
-  # Pass "/dev/null" for err to suppress stderr.
+  # Pass err=nil to suppress stderr.
   def capture_stdout(cmd, err = STDERR)
+    if err.nil?
+      err = "/dev/null"
+    end
     output, _ = Open3.capture2(*cmd, :err => err)
     output
   end
