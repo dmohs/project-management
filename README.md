@@ -8,10 +8,18 @@
 Enter this package. Start by:
 
 ```bash
-curl https://raw.githubusercontent.com/dmohs/project-management/master/.sample-project.rb > project.rb && chmod +x project.rb
+curl https://raw.githubusercontent.com/dmohs/project-management/master/project.rb -O && chmod +x project.rb
 ```
-then:
+
+Now add tasks to the `libproject` folder a la https://github.com/dmohs/project-management/blob/master/libproject/foo.rb:
+
 ```bash
-./project.rb
+mkdir libproject
+curl https://raw.githubusercontent.com/dmohs/project-management/master/libproject/foo.rb > libproject/foo.rb
 ```
-Now add tasks to the `.project` folder a la https://github.com/dmohs/react-cljs/blob/master/.project/install.rb.
+
+Finally, try out the task:
+```bash
+./project.rb # show help
+./project.rb foo # run the task
+```
