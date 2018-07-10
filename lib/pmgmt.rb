@@ -5,14 +5,26 @@ require "yaml"
 require_relative "dockerhelper"
 require_relative "syncfiles"
 
-class Common
+class Pmgmt
   @@commands = []
+
+  def self.load_scripts(scripts_dir)
+    if !File.directory?(scripts_dir)
+      self.new.error "Cannot load scripts. Not a directory: #{scripts_dir}"
+      exit 1
+    end
+    Dir.foreach(scripts_dir) do |item|
+      if item =~ /[.]rb$/
+        require "#{scripts_dir}/#{item}"
+      end
+    end
+  end
 
   def self.register_command(command)
     invocation = command[:invocation]
     fn = command[:fn]
     if fn.nil?
-      error "No :fn key defined for command #{invocation}"
+      self.new.error "No :fn key defined for command #{invocation}"
       exit 1
     end
     if fn.is_a?(Symbol)
@@ -31,35 +43,13 @@ class Common
     @@commands.push(command)
   end
 
-  def self.unregister_upgrade_self_command()
-    @@commands.reject! { |x| x[:upgrade_self_command] }
-  end
-
   def self.commands()
     @@commands
   end
 
-  attr :docker
-  attr :sf
-
-  def initialize()
-    @docker = DockerHelper.new(self)
-    @sf = SyncFiles.new(self)
-  end
-
-  def print_usage()
-    STDERR.puts "\nUsage: ./project.rb <command> <options>\n\n"
-    STDERR.puts "COMMANDS\n\n"
-    @@commands.each do |command|
-      STDERR.puts bold_term_text(command[:invocation])
-      STDERR.puts command[:description] || "(no description specified)"
-      STDERR.puts
-    end
-  end
-
-  def handle_or_die(args)
+  def self.handle_or_die(args)
     if args.length == 0 or args[0] == "--help"
-      print_usage
+      self.new.print_usage
       exit 0
     end
 
@@ -84,6 +74,28 @@ class Common
       method(fn).call(*args)
     else
       handler[:fn].call(*args.drop(1))
+    end
+  end
+
+  attr :docker
+  attr :sf
+
+  def initialize()
+    @docker = PmgmtLib::DockerHelper.new(self)
+    @sf = PmgmtLib::SyncFiles.new(self)
+  end
+
+  def print_usage()
+    STDERR.puts "\nUsage: #{$PROGRAM_NAME} <command> <options>\n\n"
+    if !@@commands.empty?
+      STDERR.puts "COMMANDS\n\n"
+      @@commands.each do |command|
+        STDERR.puts bold_term_text(command[:invocation])
+        STDERR.puts command[:description] || "[No description provided.]"
+        STDERR.puts
+      end
+    else
+      STDERR.puts " >> No commands defined.\n\n"
     end
   end
 
@@ -204,18 +216,3 @@ class Common
     end
   end
 end
-
-def upgrade_self(_)
-  c = Common.new
-  Dir.chdir(File.dirname(__FILE__)) do
-    c.run_inline %W{git pull}
-  end
-  c.status "Tools upgraded to latest version."
-end
-
-Common.register_command({
-  :invocation => "upgrade-self",
-  :description => "Upgrades this project tool to the latest version.",
-  :fn => :upgrade_self,
-  :upgrade_self_command => true,
-})
