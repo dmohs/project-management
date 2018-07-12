@@ -3,10 +3,16 @@ require "ostruct"
 require "yaml"
 
 require_relative "dockerhelper"
+require_relative "optionsparser"
 require_relative "syncfiles"
 
 class Pmgmt
   @@commands = []
+  @@options_parser = PmgmtLib::OptionsParser
+
+  def self.OptionsParser
+    @@options_parser
+  end
 
   def self.load_scripts(scripts_dir)
     if !File.directory?(scripts_dir)
@@ -70,10 +76,16 @@ class Pmgmt
     end
 
     fn = handler[:fn]
+    args = args
     if fn.is_a?(Symbol)
-      method(fn).call(*args)
+      fn = method(fn)
     else
-      handler[:fn].call(*args.drop(1))
+      args = args.drop(1)
+    end
+    if fn.arity == 0
+      fn.call()
+    else
+      fn.call(*args)
     end
   end
 

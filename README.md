@@ -11,11 +11,11 @@ Enter this package. Start by:
 curl https://raw.githubusercontent.com/dmohs/project-management/master/project.rb -O && chmod +x project.rb
 ```
 
-Now add tasks to the `libproject` folder a la https://github.com/dmohs/project-management/blob/master/libproject/foo.rb:
+Now add scripts/tasks to your dev scripts folder folder a la https://github.com/dmohs/project-management/blob/master/src/dev/scripts/foo.rb:
 
 ```bash
-mkdir libproject
-curl https://raw.githubusercontent.com/dmohs/project-management/master/libproject/foo.rb > libproject/foo.rb
+mkdir -p src/dev/scripts
+curl https://raw.githubusercontent.com/dmohs/project-management/master/src/dev/scripts/foo.rb > src/dev/scripts/foo.rb
 ```
 
 Finally, try out the task:

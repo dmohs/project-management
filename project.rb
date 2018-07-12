@@ -14,6 +14,6 @@ rescue LoadError
   STDERR.puts "---"
 end
 
-Pmgmt.load_scripts("./libproject")
+Pmgmt.load_scripts("./src/dev/scripts")
 
 Pmgmt.handle_or_die ARGV

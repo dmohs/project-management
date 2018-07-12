@@ -6,7 +6,7 @@ Gem::Specification.new do |s|
   s.description = "A library to make Ruby your preferred scripting language for dev scripts."
   s.authors = ["David Mohs"]
   s.email = "davidmohs@gmail.com"
-  s.files = ["lib/pmgmt.rb", "lib/dockerhelper.rb", "lib/syncfiles.rb"]
+  s.files = ["lib/pmgmt.rb", "lib/dockerhelper.rb", "lib/optionsparser.rb", "lib/syncfiles.rb"]
   s.homepage = "http://rubygems.org/gems/pmgmt"
   s.license = "MIT"
 end
