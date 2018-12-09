@@ -30,7 +30,5 @@ def foo(command_name, *args)
   $pm.status "Iterations was: #{op.opts.iterations}"
 end
 
-Pmgmt.register_command({
-  :invocation => "foo",
-  :fn => :foo
-})
+Pmgmt.register_command(:foo)
+# alternatively: Pmgmt.register_command({:invocation => "foo", :fn => :foo})

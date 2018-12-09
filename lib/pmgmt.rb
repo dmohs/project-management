@@ -55,7 +55,7 @@ class Pmgmt
       end
     end
 
-    @@commands.push(command)
+    @@commands.push({:invocation => invocation, :fn => fn})
   end
 
   def self.commands()
@@ -80,7 +80,7 @@ class Pmgmt
     command = args.first
     handler = @@commands.select{ |x| x[:invocation] == command }.first
     if handler.nil?
-      error "#{command} command not found."
+      self.new.error "#{command} command not found."
       exit 1
     end
 
