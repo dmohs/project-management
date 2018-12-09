@@ -27,8 +27,17 @@ class Pmgmt
   end
 
   def self.register_command(command)
-    invocation = command[:invocation]
-    fn = command[:fn]
+    if command.nil?
+      self.new.error "register_command called with nil argument"
+      exit 1
+    end
+    if command.is_a?(Symbol)
+      invocation = command.to_s
+      fn = command
+    else
+      invocation = command[:invocation]
+      fn = command[:fn]
+    end
     if fn.nil?
       self.new.error "No :fn key defined for command #{invocation}"
       exit 1
@@ -147,7 +156,7 @@ class Pmgmt
     STDERR.puts red_term_text(text)
   end
 
-  def put_command(cmd, redact=nil)
+  def put_command(cmd, redact: nil)
     if cmd.is_a?(String)
       command_string = "+ #{cmd}"
     else
@@ -160,8 +169,8 @@ class Pmgmt
     STDERR.puts command_to_echo
   end
 
-  # Pass err=nil to suppress stderr.
-  def capture_stdout(cmd, err = STDERR)
+  # Pass err: nil to suppress stderr.
+  def capture_stdout(cmd, err: STDERR)
     if err.nil?
       err = "/dev/null"
     end
@@ -169,8 +178,8 @@ class Pmgmt
     output
   end
 
-  def run_inline(cmd, redact=nil)
-    put_command(cmd, redact)
+  def run_inline(cmd, redact: nil)
+    put_command(cmd, redact: redact)
 
     # `system`, by design (?!), hides stderr when the command fails.
     if ENV["PROJECTRB_USE_SYSTEM"] == "true"
@@ -198,8 +207,8 @@ class Pmgmt
     end
   end
 
-  def run_or_fail(cmd, redact=nil)
-    put_command(cmd, redact)
+  def run_or_fail(cmd, redact: nil)
+    put_command(cmd, redact: redact)
     Open3.popen3(*cmd) do |i, o, e, t|
       i.close
       if not t.value.success?
