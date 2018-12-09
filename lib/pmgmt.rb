@@ -7,13 +7,19 @@ require_relative "optionsparser"
 require_relative "syncfiles"
 
 class Pmgmt
+  # State to hold registered commands. See {#Pmgmt.register_command}.
   @@commands = []
+  # Convenience method to provide access to the options parsing utility class.
   @@options_parser = PmgmtLib::OptionsParser
 
   def self.OptionsParser
     @@options_parser
   end
 
+  # Loads all `.rb` scripts from the given directory. Scripts are expected to register commands as
+  # a side-effect of loading.
+  # @param scripts_dir [String]
+  # @return [void]
   def self.load_scripts(scripts_dir)
     if !File.directory?(scripts_dir)
       self.new.error "Cannot load scripts. Not a directory: #{scripts_dir}"
@@ -26,6 +32,10 @@ class Pmgmt
     end
   end
 
+  # Registers a command. Registered commands can be invoked by name, appear in command lists and
+  # allow --help docs.
+  # @param command [Map] The :invocation key is what would be typed to invoke the command and the :fn key is what function to execute when invoked. Specify only a :fn key for shorthand.
+  # @return [void]
   def self.register_command(command)
     if command.nil?
       self.new.error "register_command called with nil argument"
@@ -58,10 +68,13 @@ class Pmgmt
     @@commands.push({:invocation => invocation, :fn => fn})
   end
 
+  # @return [Array] the commands array for inspection.
   def self.commands()
     @@commands
   end
 
+  # Handles command execution.
+  # @param args [Array] Pass ARGV.
   def self.handle_or_die(args)
     if args.length == 0 or args[0] == "--help"
       self.new.print_usage
@@ -98,7 +111,9 @@ class Pmgmt
     end
   end
 
+  # Convenience method to easily retrieve Docker utilities. See {#PmgmtLib::DockerHelper}.
   attr :docker
+  # Convenience method to easily retrieve file-syncing utilities. See {#PmgmtLib::SyncFiles}.
   attr :sf
 
   def initialize()
@@ -144,14 +159,20 @@ class Pmgmt
     "\033[1m#{text}\033[0m"
   end
 
+  # Prints "status" text (blue) on STDERR.
+  # @return [void]
   def status(text)
     STDERR.puts blue_term_text(text)
   end
 
+  # Prints "warning" text (yellow) on STDERR.
+  # @return [void]
   def warning(text)
     STDERR.puts yellow_term_text(text)
   end
 
+  # Prints "error" text (red) on STDERR.
+  # @return [void]
   def error(text)
     STDERR.puts red_term_text(text)
   end
@@ -169,7 +190,10 @@ class Pmgmt
     STDERR.puts command_to_echo
   end
 
-  # Pass err: nil to suppress stderr.
+  # Runs the given command and captures its stdout.
+  # @param cmd [Array] Command to run.
+  # @param err: Pass nil to suppress stderr output.
+  # @return [String] Captured stdout.
   def capture_stdout(cmd, err: STDERR)
     if err.nil?
       err = "/dev/null"
@@ -178,6 +202,10 @@ class Pmgmt
     output
   end
 
+  # Runs the given command "inline," meaning that it will take over the terminal while running.
+  # @param cmd [Array] Command to run.
+  # @param redact: [String] Occurrances of this string will be hidden from normal output.
+  # @return [void]
   def run_inline(cmd, redact: nil)
     put_command(cmd, redact: redact)
 
@@ -200,6 +228,7 @@ class Pmgmt
     end
   end
 
+  # Similar to {#run_inline} but will prevent exiting when an interrupt is encountered.
   def run_inline_swallowing_interrupt(cmd)
     begin
       run_inline cmd
@@ -207,6 +236,7 @@ class Pmgmt
     end
   end
 
+  # Runs a command and fails on non-success exit code.
   def run_or_fail(cmd, redact: nil)
     put_command(cmd, redact: redact)
     Open3.popen3(*cmd) do |i, o, e, t|
@@ -218,6 +248,8 @@ class Pmgmt
     end
   end
 
+  # Runs a command without echoing.
+  # @return [Status] command's exit status.
   def run(cmd)
     Open3.popen3(*cmd) do |i, o, e, t|
       i.close
@@ -225,6 +257,8 @@ class Pmgmt
     end
   end
 
+  # Accepts multiple arrays of commands and pipes each one to the next, failing if any command
+  # exits with an error.
   def pipe(*cmds)
     s = cmds.map { |x| x.join(" ") }
     s = s.join(" | ")
