@@ -1,5 +1,13 @@
 #!/usr/bin/env ruby -w
 
+def apply_dev_mode()
+  $:.unshift "./lib"
+  STDERR.puts "\nWARNING: Dev mode---installed gem ignored.\n\n"
+end
+
+# Uncomment during development:
+# apply_dev_mode
+
 begin
   require "pmgmt"
 rescue LoadError
@@ -14,6 +22,23 @@ rescue LoadError
   STDERR.puts "---"
 end
 
-Pmgmt.load_scripts("./src/dev/scripts")
+##
+## Mode 1: Single script
+## "I want to quickly automate a single task."
+##
 
-Pmgmt.handle_or_die ARGV
+$pm = Pmgmt.new
+
+def foo(command_name, *args)
+  $pm.run_inline %W{echo You ran:} + [command_name] + args
+end
+
+foo $0, *ARGV
+
+###
+### Mode 2: Project scripts directory
+### "I'm working on a project and need several scripts for various tasks."
+###
+
+# Pmgmt.load_scripts("./src/dev/scripts")
+# Pmgmt.handle_or_die ARGV
