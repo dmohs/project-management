@@ -11,7 +11,7 @@ end
 begin
   require "pmgmt"
 rescue LoadError
-  install_cmd = "gem install pmgmt --version 1.0.0"
+  install_cmd = "gem install pmgmt --version 1.1.0"
   STDERR.puts "+ #{install_cmd}"
   system install_cmd
   unless $?.success?
