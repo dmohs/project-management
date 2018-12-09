@@ -9,4 +9,5 @@ Gem::Specification.new do |s|
   s.files = ["lib/pmgmt.rb", "lib/dockerhelper.rb", "lib/optionsparser.rb", "lib/syncfiles.rb"]
   s.homepage = "http://rubygems.org/gems/pmgmt"
   s.license = "MIT"
+  s.required_ruby_version = '>= 2'
 end
