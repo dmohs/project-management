@@ -25,7 +25,7 @@ def foo(command_name, *args)
   }
   op.parse.validate
 
-  $pm.run_inline %W{echo Don't tell anyone about the fizbit.}, redact="fizbit"
+  $pm.run_inline %W{echo Don't tell anyone about the fizbit.}, redact: "fizbit"
   $pm.run_inline %W{echo You ran:} + [command_name] + args
   $pm.status "Iterations was: #{op.opts.iterations}"
 end
